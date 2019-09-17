@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API</name>
+    </assembly>
+    <members>
+        <member name="M:API.Controllers.InterestController.CalculateBaseRateChangeImpact(System.Int64,System.Int64,Domain.Entities.BaseRateCodeEnum)">
+            <summary>
+            Evaluates how the change of the base rate will change the interest rate
+            </summary>
+            <response code="404">The user with specific agreement was not found</response>
+            <response code="503">Integration with www.lb.lt failed while trying to retrieve the latest Vilib rate</response>  
+        </member>
+    </members>
+</doc>

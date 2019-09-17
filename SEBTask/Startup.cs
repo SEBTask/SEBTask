@@ -1,6 +1,10 @@
-﻿using API.Middleware;
+﻿using API.Attributes;
+using API.Middleware;
 using Domain.Contracts.DataAccess;
+using Domain.Contracts.Services;
+using Domain.Services;
 using Infrastructure.DataAccess;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace SEBTask
 {
@@ -32,8 +39,16 @@ namespace SEBTask
                 .AddSwaggerGen(options =>
                 {
                     options.SwaggerDoc("v1", new Info { Title = "SEB task API", Version = "v1" });
+                    options.DescribeAllEnumsAsStrings();
+
+                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    options.IncludeXmlComments(xmlPath);
                 })
-                .AddMvc()
+                .AddMvc(options =>
+                {
+                    options.Filters.Add(typeof(ModelStateValidationAttribute));
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -49,8 +64,8 @@ namespace SEBTask
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection()
-                .UseCustomExceptionHandler()
+            app.UseCustomExceptionHandler()
+                .UseHttpsRedirection()
                 .UseMvc()
                 .UseSwagger()
                 .UseSwaggerUI(sa =>
@@ -71,7 +86,8 @@ namespace SEBTask
 
         public static IServiceCollection AddDomainServices(this IServiceCollection services)
         {
-            
+            services.AddHttpClient<IBaseRateService, BaseRateService>();
+            services.AddScoped<IInterestRateService, InterestRateService>();
 
             return services;
         }

@@ -1,5 +1,7 @@
-﻿using Domain.Exceptions;
+﻿using API.Models;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -32,7 +34,15 @@ namespace API.Middleware
             context.Response.ContentType = "application/json";
             this.SetStatusCode(context, exception);
 
-            return context.Response.WriteAsync(this.GetExceptionMessage(exception));
+            var result = JsonConvert.SerializeObject(
+                new Error
+                {
+                    Message = this.GetExceptionMessage(exception),
+                    TraceIdentifier = context.TraceIdentifier
+                }
+            );
+
+            return context.Response.WriteAsync(result);
         }
 
         private void SetStatusCode(HttpContext context, Exception exception)
@@ -46,6 +56,12 @@ namespace API.Middleware
                         statusCode = (int)HttpStatusCode.NotFound;
                         break;
                     }
+
+                case IntegrationFailedException ife:
+                    {
+                        statusCode = (int)HttpStatusCode.ServiceUnavailable;
+                        break;
+                    }
             }
 
             context.Response.StatusCode = statusCode;
@@ -56,6 +72,7 @@ namespace API.Middleware
             switch (exception)
             {
                 case EntityNotFoundException enfe:
+                case IntegrationFailedException ife:
                     {
                         return exception.Message;
                     }

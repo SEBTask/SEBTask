@@ -11,5 +11,10 @@
 
         public virtual BaseRateCode BaseRateCode { get; set; }
         public virtual User User { get; set; }
+
+        public decimal CalculateInterestRate(decimal baseRate)
+        {
+            return baseRate + this.Margin;
+        }
     }
 }
